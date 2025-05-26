@@ -2,8 +2,5 @@ services:
   - type: web
     name: flask-app
     env: python
-    region: oregon
-    plan: free
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn "app:create_app()"
-    autoDeploy: true
+    startCommand: gunicorn app:app

@@ -1,38 +1,30 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Arta.Guru Backend Dashboard</title>
+  <title>Arta.Guru Dashboard</title>
 </head>
 <body>
-  <h1>Arta.Guru Backend CC</h1>
+  <h1>📈 Arta.Guru Volatility Dashboard</h1>
   <form method="POST">
-    <label for="sector">Select Sector:</label>
+    <label>Sector:</label>
     <select name="sector">
       {% for sec in sectors %}
         <option value="{{ sec }}" {% if sec == selected_sector %}selected{% endif %}>{{ sec }}</option>
       {% endfor %}
     </select>
 
-    <label for="start_date">Start Date:</label>
+    <label>Start Date:</label>
     <input type="date" name="start_date" value="{{ start_date or '' }}">
-
-    <label for="end_date">End Date:</label>
+    <label>End Date:</label>
     <input type="date" name="end_date" value="{{ end_date or '' }}">
-
     <button type="submit">Update</button>
   </form>
 
-  <h2>Top 5 Most Volatile Stocks ({{ selected_sector }})</h2>
+  <h2>Top 5 Most Volatile Stocks</h2>
   <table border="1" cellpadding="8">
-    <tr>
-      <th>Stock</th>
-      <th>Volatility</th>
-    </tr>
-    {% for ticker, value in top5.items() %}
-    <tr>
-      <td>{{ ticker }}</td>
-      <td>{{ value }}</td>
-    </tr>
+    <tr><th>Ticker</th><th>Volatility</th></tr>
+    {% for ticker, vol in top5.items() %}
+    <tr><td>{{ ticker }}</td><td>{{ vol }}</td></tr>
     {% endfor %}
   </table>
 </body>

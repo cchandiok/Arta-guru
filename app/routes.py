@@ -1,14 +1,11 @@
-# FULL RESTART: Minimal Flask App with Volatility Dashboard
+# FULLY CLEAN FLASK APP ENTRY (no factory pattern)
 
-from flask import Flask, render_template, request, Blueprint
+from flask import Flask, render_template, request
 import os
 import pandas as pd
 import numpy as np
 import datetime as dt
 from eodhd import EodHistoricalData
-
-main = Blueprint('main', __name__)  #✅ # THIS is what you were missing
-
 
 app = Flask(__name__)
 
@@ -34,7 +31,7 @@ def download_data(tickers, key, folder='data_files'):
             df.drop(columns=['date'], inplace=True)
             df.to_csv(f"{folder}/{ticker}.csv")
         except Exception as e:
-            print(f"Failed to download {ticker}: {e}")
+            print(f"{ticker} failed: {e}")
 
 def get_closing_prices(folder='data_files'):
     files = [f for f in os.listdir(folder) if f.endswith('.csv')]
@@ -71,6 +68,5 @@ def index():
 
     return render_template('index.html', top5=top5, sectors=all_sectors, selected_sector=sector, start_date=start_date, end_date=end_date)
 
-# === Run ===
 if __name__ == '__main__':
     app.run(debug=True)
