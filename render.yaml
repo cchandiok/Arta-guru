@@ -3,4 +3,5 @@ services:
     name: flask-app
     runtime: python
     buildCommand: ""
-    startCommand: gunicorn app:app
+    startCommand: gunicorn "app:create_app()"
+
