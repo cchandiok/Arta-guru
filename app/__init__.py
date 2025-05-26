@@ -1,8 +1,9 @@
 from flask import Flask
-import os
 
-app = Flask(__name__,
-            template_folder=os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'templates'),
-            static_folder=os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'static'))
+def create_app():
+    app = Flask(__name__)
 
-from app import routes
+    from .routes import main
+    app.register_blueprint(main)
+
+    return app
