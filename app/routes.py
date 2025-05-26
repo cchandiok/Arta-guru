@@ -5,7 +5,8 @@ import os
 import pandas as pd
 import numpy as np
 import datetime as dt
-from eod import EodHistoricalData
+from eodhd import EodHistoricalData
+
 main = Blueprint('main', __name__)  #✅ # THIS is what you were missing
 
 
