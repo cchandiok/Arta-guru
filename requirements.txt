@@ -1,7 +1,0 @@
-Flask
-pandas
-numpy
-matplotlib
-requests
-eodhd
-gunicorn
