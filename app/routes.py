@@ -1,47 +1,84 @@
 from flask import Blueprint, render_template, request
-import os
 import pandas as pd
 import numpy as np
+import os
 import datetime as dt
 import requests
+import glob
 
-main = Blueprint('main', __name__)
-DEFAULT_DATE = dt.date.today() - dt.timedelta(396)
-API_KEY = open("api_token.txt").read().strip()
-TICKERS = ["AAPL", "GOOG", "MSFT", "META", "TSLA"]
-DATA_FOLDER = "data_files"
+main = Blueprint("main", __name__)
 
-def fetch_data(ticker, key, folder):
+DEFAULT_DATE = dt.date.today() - dt.timedelta(days=396)
+
+def load_key():
+    return open("api_token.txt").read().strip()
+
+def get_sector_tickers(sector):
+    df = pd.read_csv("sp500.csv")
+    df_sector = df[df["Sector"] == sector]
+    return df_sector["Symbol"].head(10).tolist(), sorted(df["Sector"].unique())
+
+def download_data(tickers, key, folder="data_files"):
     if not os.path.exists(folder):
         os.makedirs(folder)
-    url = f"https://eodhd.com/api/eod/{ticker}.US"
-    params = {'api_token': key, 'from': DEFAULT_DATE.isoformat(), 'fmt': 'json'}
-    response = requests.get(url, params=params)
-    if response.status_code == 200:
-        df = pd.DataFrame(response.json())
-        df.index = pd.DatetimeIndex(df['date'])
-        df.drop(columns=['date'], inplace=True)
-        df.to_csv(f"{folder}/{ticker}.csv")
-
-def build_closing_price_matrix(folder, tickers):
-    closes = pd.DataFrame()
     for ticker in tickers:
-        file_path = os.path.join(folder, f"{ticker}.csv")
-        if os.path.exists(file_path):
-            df = pd.read_csv(file_path, index_col='date')
-            if 'close' in df.columns:
-                closes[ticker] = df['close']
+        url = f"https://eodhd.com/api/eod/{ticker}.US"
+        params = {"api_token": key, "from": DEFAULT_DATE.isoformat(), "fmt": "json"}
+        try:
+            r = requests.get(url, params=params)
+            if r.status_code == 200:
+                df = pd.DataFrame(r.json())
+                if not df.empty:
+                    df.index = pd.DatetimeIndex(df["date"])
+                    df.drop(columns=["date"], inplace=True)
+                    df.to_csv(f"{folder}/{ticker}.csv")
+                    print(f"✅ Downloaded {ticker}")
+                else:
+                    print(f"⚠️ Empty data for {ticker}")
+            else:
+                print(f"❌ Failed to fetch {ticker}: {r.status_code}")
+        except Exception as e:
+            print(f"Error downloading {ticker}: {e}")
+
+def get_closing_prices(folder="data_files"):
+    closes = pd.DataFrame()
+    for file in os.listdir(folder):
+        if file.endswith(".csv"):
+            symbol = file.replace(".csv", "")
+            df = pd.read_csv(os.path.join(folder, file), index_col="date")
+            closes[symbol] = df.get("close", df.get("adjusted_close"))
     return closes
 
-@main.route('/')
+@main.route("/", methods=["GET", "POST"])
 def index():
-    for ticker in TICKERS:
-        fetch_data(ticker, API_KEY, DATA_FOLDER)
+    key = load_key()
+    sector = request.form.get("sector", "Technology")
+    start = request.form.get("start_date", "")
+    end = request.form.get("end_date", "")
+    
+    # 💣 Clean old downloaded files
+    for f in glob.glob("data_files/*.csv"):
+        os.remove(f)
 
-    df = build_closing_price_matrix(DATA_FOLDER, TICKERS)
+    tickers, sectors = get_sector_tickers(sector)
+    download_data(tickers, key)
+    df = get_closing_prices()
     df.index = pd.to_datetime(df.index)
+
+    if start and end:
+        df = df.loc[start:end]
+
+    # 💥 Prevent math errors
+    df = df.astype(float)
+
     returns = np.log(df / df.shift(1)).dropna()
     volatility = returns.std().sort_values(ascending=False).round(4)
     top5 = volatility.head(5).to_dict()
 
-    return render_template("index.html", top5=top5)
+    return render_template("index.html",
+        top5=top5,
+        sectors=sectors,
+        selected_sector=sector,
+        start_date=start,
+        end_date=end
+    )
