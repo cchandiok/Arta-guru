@@ -82,3 +82,26 @@ def index():
         start_date=start,
         end_date=end
     )
+@main.route("/pfizer")
+def pfizer():
+    filepath = "data_files/PFE.csv"
+
+    if not os.path.exists(filepath):
+        return "⚠️ Pfizer data file not found. Please upload it."
+
+    df = pd.read_csv(filepath)
+    df["date"] = pd.to_datetime(df["date"])
+    df.set_index("date", inplace=True)
+
+    df["log_return"] = np.log(df["close"] / df["close"].shift(1))
+    df["volatility"] = df["log_return"].rolling(window=21).std() * np.sqrt(252)
+    df.dropna(inplace=True)
+
+    chart_data = {
+        "dates": df.index.strftime("%Y-%m-%d").tolist(),
+        "prices": df["close"].tolist(),
+        "volatility": df["volatility"].tolist()
+    }
+
+    return render_template("pfizer.html", data=chart_data)
+

@@ -18,8 +18,8 @@
     <canvas id="volatilityChart" width="700" height="300"></canvas>
 
     <script>
-        const labels = {{ data["dates"]|tojson }};
-        const prices = {{ data["prices"]|tojson }};
+        const labels = {{data["dates"]|tojson }};
+        const prices = {{data["prices"]|tojson }};
         const volatility = {{ data["volatility"]|tojson }};
 
         new Chart(document.getElementById("priceChart"), {
