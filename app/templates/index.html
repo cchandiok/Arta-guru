@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Arta.Guru Volatility</title>
+</head>
+<body>
+  <h1>📊 Arta.Guru - Most Volatile Stocks</h1>
+  <table border="1" cellpadding="8">
+    <tr>
+      <th>Ticker</th>
+      <th>Volatility</th>
+    </tr>
+    {% for ticker, vol in top5.items() %}
+    <tr>
+      <td>{{ ticker }}</td>
+      <td>{{ vol }}</td>
+    </tr>
+    {% endfor %}
+  </table>
+</body>
+</html>
