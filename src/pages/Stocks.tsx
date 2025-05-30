@@ -17,7 +17,7 @@ const Stocks = () => {
   const [apiError, setApiError] = useState<string>("");
 
   useEffect(() => {
-    fetch("http://127.0.0.1:5000/api/stock?ticker=AAPL")
+    fetch("https://arta-guru.onrender.com/login")
       .then((res) => res.json())
       .then((data) => {
         if (data.error) {
