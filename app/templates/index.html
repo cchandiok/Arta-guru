@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Arta.Guru - Most Volatile Stocks</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <h1>📊 Arta.Guru - Most Volatile Stocks</h1>
+    <form method="POST">
+        <label>Select Sector:</label>
+        <select name="sector">
+            {% for sec in sectors %}
+            <option value="{{ sec }}" {% if sec == selected_sector %}selected{% endif %}>{{ sec }}</option>
+            {% endfor %}
+        </select>
+
+        <label>Start Date:</label>
+        <input type="date" name="start_date" value="{{ start_date }}">
+
+        <label>End Date:</label>
+        <input type="date" name="end_date" value="{{ end_date }}">
+
+        <button type="submit">Update</button>
+    </form>
+
+    <h2>🔝 Top 5 Most Volatile Stocks ({{ selected_sector }})</h2>
+    <table border="1">
+        <tr><th>Ticker</th><th>Volatility</th></tr>
+        {% for ticker, value in top5.items() %}
+        <tr><td>{{ ticker }}</td><td>{{ value }}</td></tr>
+        {% endfor %}
+
+    </table>
+    <br><br>
+<a href="/pfizer">
+    <button>📈 View Pfizer Analysis</button>
+</a>
+
+</body>
+</html>
