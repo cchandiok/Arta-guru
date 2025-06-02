@@ -9,7 +9,8 @@ auth = Blueprint("auth", __name__)
 # Mock user data (in production, use a database)
 users = {
     "admin": "password123",
-    "user1": "secretpass"
+    "user1": "secretpass",
+    "chahal": "secret123"
 }
 
 

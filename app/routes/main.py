@@ -13,7 +13,7 @@ POLYGON_KEY = os.getenv("POLYGON_API_KEY")
 @main.route("/", methods=["GET"])
 #@token_required
 def home():
-    return render_template("index.html")
+    return render_template("index.html", stock=None)
 
 # === Get Stock Info (AJAX Fetch) ===
 @main.route("/api/stock", methods=["GET"])
@@ -36,14 +36,7 @@ def get_stock_data():
         if not data:
             return jsonify({"error": "No data found for ticker"}), 404
 
-        return jsonify({
-            "ticker": data.get("ticker"),
-            "name": data.get("name"),
-            "market": data.get("market"),
-            "locale": data.get("locale"),
-            "primary_exchange": data.get("primary_exchange"),
-            "updated": data.get("updated")
-        })
+        return jsonify(data)
 
     except requests.exceptions.RequestException as e:
         return jsonify({"error": f"Request failed: {str(e)}"}), 500

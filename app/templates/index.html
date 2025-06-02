@@ -1,43 +1,55 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Arta.Guru - Stock Overview</title>
+    <title>Arta.Guru - Stock Overview</title>
 </head>
 <body>
-  <h1>📈 Arta.Guru - Stock Overview</h1>
+    <h1>📈 Arta.Guru - Stock Overview</h1>
 
-  <label>Enter Ticker Symbol:</label>
-  <input type="text" id="tickerInput" placeholder="e.g. AAPL">
-  <button onclick="fetchStock()">View</button>
+    <form id="ticker-form">
+        <label>Enter Ticker Symbol:</label>
+        <input type="text" id="ticker" name="ticker" required>
+        <button type="submit">View</button>
+    </form>
 
-  <div id="stockResult"></div>
+    <div id="stock-info" style="margin-top:20px;">
+        <!-- Populated via JS -->
+    </div>
 
-  <script>
-    function fetchStock() {
-      const ticker = document.getElementById("tickerInput").value;
-      fetch("/api/stock?ticker=PFE", {
-  headers: {
-    "Authorization": "Bearer " + localStorage.getItem("token")
-}
-})
+    <script>
+    document.getElementById("ticker-form").addEventListener("submit", async function (e) {
+        e.preventDefault();
+        const ticker = document.getElementById("ticker").value;
+        const response = await fetch(`/api/stock?ticker=${ticker}`);
+        const data = await response.json();
 
-      .then(res => res.json())
-      .then(data => {
+        const infoDiv = document.getElementById("stock-info");
+
         if (data.error) {
-          document.getElementById("stockResult").innerHTML = `<p style="color:red;">${data.error}</p>`;
+            infoDiv.innerHTML = `<p style="color:red;">Error: ${data.error}</p>`;
         } else {
-          document.getElementById("stockResult").innerHTML = `
-            <h3>${data.name} (${data.ticker})</h3>
-            <p><strong>Market:</strong> ${data.market}</p>
-            <p><strong>Exchange:</strong> ${data.primary_exchange}</p>
-            <p><strong>Last Updated:</strong> ${data.updated}</p>
-          `;
+            const address = data.address || {};
+
+            infoDiv.innerHTML = `
+                <h2>${data.name} (${data.ticker})</h2>
+                <p><strong>Market:</strong> ${data.market}</p>
+                <p><strong>Exchange:</strong> ${data.primary_exchange}</p>
+                <p><strong>Type:</strong> ${data.type}</p>
+                <p><strong>Active:</strong> ${data.active}</p>
+                <p><strong>Currency:</strong> ${data.currency_name}</p>
+                <p><strong>CIK:</strong> ${data.cik}</p>
+                <p><strong>Composite FIGI:</strong> ${data.composite_figi}</p>
+                <p><strong>Share Class FIGI:</strong> ${data.share_class_figi}</p>
+                <p><strong>Market Cap:</strong> ${data.market_cap?.toLocaleString("en-US")}</p>
+                <p><strong>Phone Number:</strong> ${data.phone_number}</p>
+                <p><strong>Address:</strong><br>
+                    ${address.address1 || ""}<br>
+                    ${address.city || ""}, ${address.state || ""} ${address.postal_code || ""}
+                </p>
+                <p><strong>Last Updated:</strong> ${data.updated || "N/A"}</p>
+            `;
         }
-      })
-      .catch(err => {
-        document.getElementById("stockResult").innerHTML = `<p style="color:red;">Failed to fetch data</p>`;
-      });
-    }
-  </script>
+    });
+</script>
 </body>
 </html>
