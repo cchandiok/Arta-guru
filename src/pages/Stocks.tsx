@@ -11,7 +11,10 @@ const Stocks = () => {
   const [apiError, setApiError] = useState<string>("");
 
   const fetchStockData = () => {
-    const apiUrl = `${process.env.NEXT_PUBLIC_BACKEND_API}/api/stock?ticker=${ticker}`;
+    const apiUrl = `${import.meta.env.VITE_BACKEND_API}/api/stock?ticker=${ticker}`;
+    console.log("Fetching from:", apiUrl);
+    console.log("✅ Backend API:", import.meta.env.VITE_BACKEND_API);
+
 
     fetch(apiUrl)
       .then((res) => res.json())
