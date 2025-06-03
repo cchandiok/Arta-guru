@@ -33,16 +33,22 @@ def login():
     if request.method == "GET":
         return render_template("login.html")
 
-    data = request.get_json()
-    user = users_collection.find_one({"username": data["username"]})
-    
-    # ✅ Use scrypt.verify instead of werkzeug
-    if not user or not scrypt.verify(data["password"], user["password"]):
-        return jsonify({"message": "Invalid credentials"}), 401
+    try:
+        data = request.get_json()
+        if not data or "username" not in data or "password" not in data:
+            return jsonify({"message": "Missing credentials"}), 400
 
-    token = jwt.encode({
-        "username": data["username"],
-        "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=2)
-    }, SECRET_KEY, algorithm="HS256")
+        user = users_collection.find_one({"username": data["username"]})
+        if not user or not check_password_hash(user["password"], data["password"]):
+            return jsonify({"message": "Invalid credentials"}), 401
 
-    return jsonify({"token": token})
+        token = jwt.encode({
+            "username": data["username"],
+            "exp": datetime.datetime.utcnow() + datetime.timedelta(hours=2)
+        }, SECRET_KEY, algorithm="HS256")
+
+        return jsonify({"token": token})
+
+    except Exception as e:
+        return jsonify({"message": "Server error", "error": str(e)}), 500
+
