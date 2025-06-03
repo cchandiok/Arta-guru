@@ -23,4 +23,4 @@ PyJWT
 pymongo
 python-dotenv
 flask_cors
-
+passlib
