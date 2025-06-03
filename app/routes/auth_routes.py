@@ -1,7 +1,5 @@
-# app/routes/auth_routes.py
-
 from flask import Blueprint, request, jsonify, render_template
-from werkzeug.security import generate_password_hash, check_password_hash
+from passlib.hash import scrypt  # ✅ Use scrypt for verification
 import jwt
 import datetime
 import os
@@ -9,10 +7,10 @@ from pymongo import MongoClient
 
 auth = Blueprint("auth", __name__)
 
-# === MongoDB Atlas connection ===
+# MongoDB Atlas connection
 MONGO_URI = "mongodb+srv://app_service:008rVThcsjmQjjFW@aws-mumbai.1hs8j.mongodb.net/arta_dev?retryWrites=true&w=majority"
 client = MongoClient(MONGO_URI)
-db = client["arta_dev"]  # ✅ Correct DB name
+db = client["arta_dev"]
 users_collection = db["users"]
 
 SECRET_KEY = os.getenv("SECRET_KEY", "mysecret")
@@ -23,7 +21,7 @@ def register():
     if users_collection.find_one({"username": data["username"]}):
         return jsonify({"message": "User already exists"}), 409
 
-    hashed_pw = generate_password_hash(data["password"])
+    hashed_pw = scrypt.hash(data["password"])  # ✅ Hash with scrypt
     users_collection.insert_one({
         "username": data["username"],
         "password": hashed_pw
@@ -35,11 +33,11 @@ def login():
     if request.method == "GET":
         return render_template("login.html")
 
-    # POST = handle login logic
     data = request.get_json()
     user = users_collection.find_one({"username": data["username"]})
-
-    if not user or not check_password_hash(user["password"], data["password"]):
+    
+    # ✅ Use scrypt.verify instead of werkzeug
+    if not user or not scrypt.verify(data["password"], user["password"]):
         return jsonify({"message": "Invalid credentials"}), 401
 
     token = jwt.encode({
