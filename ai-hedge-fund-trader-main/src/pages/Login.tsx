@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -13,7 +12,7 @@ interface LoginProps {
 }
 
 const Login = ({ onLogin }: LoginProps) => {
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
@@ -22,22 +21,43 @@ const Login = ({ onLogin }: LoginProps) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    
-    // For demo purposes, we'll accept any email/password combination
-    // In a real app, you would validate against a backend
-    setTimeout(() => {
-      // Call the onLogin function passed from App.tsx
-      onLogin();
-      
-      toast({
-        title: "Login successful",
-        description: "Welcome to Arta.Guru!",
+
+    try {
+const response = await fetch(`${import.meta.env.VITE_BACKEND_API}/login`, {
+
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ username, password })
       });
-      
-      // Redirect to dashboard
-      navigate("/dashboard");
+
+      const data = await response.json();
+
+      if (response.ok && data.token) {
+        localStorage.setItem("token", data.token);
+        onLogin();
+        toast({
+          title: "Login successful",
+          description: "Welcome to Arta.Guru!",
+        });
+        navigate("/dashboard");
+      } else {
+        toast({
+          title: "Login failed",
+          description: data.message || "Invalid credentials",
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      toast({
+        title: "Login failed",
+        description: "Network error. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
       setIsLoading(false);
-    }, 1500);
+    }
   };
 
   return (
@@ -60,14 +80,15 @@ const Login = ({ onLogin }: LoginProps) => {
             <form onSubmit={handleSubmit}>
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    placeholder="name@example.com"
+                  <Label htmlFor="username">Username or Email</Label>
+                  <input
+                    id="username"
+                    placeholder="Enter your username"
                     required
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    type="text"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md"
                   />
                 </div>
                 <div className="space-y-2">
